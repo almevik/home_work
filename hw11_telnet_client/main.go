@@ -29,8 +29,7 @@ func main() {
 	log.Printf("подключение к %s\n", addr)
 
 	client := NewTelnetClient(addr, *timeout, os.Stdin, os.Stdout)
-	err := client.Connect()
-	if err != nil {
+	if err := client.Connect(); err != nil {
 		log.Fatalf("не удалось подключиться к %v, %v", addr, err)
 	}
 
