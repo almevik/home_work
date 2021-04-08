@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bufio"
-	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"os"
 	"time"
 )
 
@@ -38,7 +38,7 @@ func (c *client) Connect() error {
 
 	c.conn, err = net.DialTimeout("tcp", c.addr, c.timeout)
 	if err != nil {
-		return err
+		return fmt.Errorf("ошибка подключения: %w", err)
 	}
 
 	return nil
@@ -49,39 +49,22 @@ func (c *client) Close() error {
 }
 
 func (c *client) Send() error {
-	r := bufio.NewReader(c.in)
-	for {
-		str, err := r.ReadString('\n')
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				log.Println("EOF")
-				return nil
-			}
-			return err
-		}
-
-		_, err = c.conn.Write([]byte(str))
-		if err != nil {
-			return err
-		}
+	_, err := io.Copy(c.conn, c.in)
+	if err != nil {
+		return fmt.Errorf("ошибка отправки: %w", err)
 	}
+
+	log.Println("EOF")
+
+	return nil
 }
 
 func (c *client) Receive() error {
-	r := bufio.NewReader(c.conn)
-	for {
-		str, err := r.ReadString('\n')
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				log.Println("EOF")
-				return nil
-			}
-			return err
-		}
-
-		_, err = c.out.Write([]byte(str))
-		if err != nil {
-			return err
-		}
+	_, err := io.Copy(c.out, c.conn)
+	if err != nil {
+		return fmt.Errorf("ошибка при получении: %w", err)
 	}
+	fmt.Fprintln(os.Stderr, "соединение закрыто")
+
+	return nil
 }
