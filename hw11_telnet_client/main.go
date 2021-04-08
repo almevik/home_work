@@ -53,23 +53,25 @@ func main() {
 
 // Слушатель сигнала остановки программы.
 func listenStopSignal(cancel context.CancelFunc) {
+	defer cancel()
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 
 	<-ch
-	cancel()
 }
 
 func send(client TelnetClient, cancel context.CancelFunc) {
+	defer cancel()
+
 	if err := client.Send(); err != nil {
-		log.Println(fmt.Errorf("не удалось отправить: %w", err))
+		log.Println(fmt.Fprintln(os.Stderr, err))
 	}
-	cancel()
 }
 
 func receive(client TelnetClient, cancel context.CancelFunc) {
+	defer cancel()
+
 	if err := client.Receive(); err != nil {
-		log.Println(fmt.Errorf("не удалось получить: %w", err))
+		log.Println(fmt.Fprintln(os.Stderr, err))
 	}
-	cancel()
 }
