@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -22,14 +23,16 @@ type client struct {
 	in      io.ReadCloser
 	out     io.Writer
 	conn    net.Conn
+	cancel  context.CancelFunc
 }
 
-func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
+func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer, cancel context.CancelFunc) TelnetClient {
 	return &client{
 		addr:    address,
 		timeout: timeout,
 		in:      in,
 		out:     out,
+		cancel:  cancel,
 	}
 }
 
@@ -49,6 +52,8 @@ func (c *client) Close() error {
 }
 
 func (c *client) Send() error {
+	defer c.cancel()
+
 	_, err := io.Copy(c.conn, c.in)
 	if err != nil {
 		return fmt.Errorf("ошибка отправки: %w", err)
@@ -60,6 +65,8 @@ func (c *client) Send() error {
 }
 
 func (c *client) Receive() error {
+	defer c.cancel()
+
 	_, err := io.Copy(c.out, c.conn)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении: %w", err)
