@@ -44,13 +44,9 @@ func main() {
 	log.Printf("успешно подключен")
 	defer client.Close()
 
-	go listenStopSignal(ctx, cancel)
 	go receive(client)
 	go send(client)
-}
 
-// Слушатель сигнала остановки программы.
-func listenStopSignal(ctx context.Context, cancel context.CancelFunc) {
 	chSig := make(chan os.Signal, 1)
 	signal.Notify(chSig, os.Interrupt)
 
