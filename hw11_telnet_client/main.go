@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -13,10 +12,13 @@ import (
 
 const fTimeout = "timeout"
 
+var errLog = log.New(os.Stderr, "", 0)
+
 func main() {
 	timeout := flag.Duration(fTimeout, 10*time.Second, "таймаут подключения к серверу")
 
 	flag.Parse()
+
 	if flag.NArg() < 2 {
 		log.Fatal("некорректные аргументы: укажите адрес и порт")
 	}
@@ -57,14 +59,14 @@ func listenStopSignal(ctx context.Context, cancel context.CancelFunc) {
 
 func send(client TelnetClient) {
 	if err := client.Send(); err != nil {
-		log.Println(fmt.Fprintln(os.Stderr, err))
+		errLog.Printf("не удалось отправить: %v", err)
 		return
 	}
 }
 
 func receive(client TelnetClient) {
 	if err := client.Receive(); err != nil {
-		log.Println(fmt.Fprintln(os.Stderr, err))
+		errLog.Printf("не удалось прочитать: %v", err)
 		return
 	}
 }
