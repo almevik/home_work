@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 )
 
@@ -29,6 +30,8 @@ func main() {
 
 	log.Printf("подключение к %s\n", addr)
 
+	var wg sync.WaitGroup
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	client := NewTelnetClient(addr, *timeout, os.Stdin, os.Stdout, cancel)
@@ -40,8 +43,18 @@ func main() {
 	defer client.Close()
 
 	go listenStopSignal(ctx, cancel)
-	go receive(client)
-	go send(client)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		receive(client)
+	}()
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		send(client)
+	}()
+
+	wg.Wait()
 }
 
 // Слушатель сигнала остановки программы.
