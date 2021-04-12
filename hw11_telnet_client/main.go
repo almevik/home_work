@@ -10,15 +10,13 @@ import (
 	"time"
 )
 
-const fTimeout = "timeout"
-
 var errLog = log.New(os.Stderr, "", 0)
 
 func main() {
-	flag.Parse()
-
-	timeoutFlag := flag.String(fTimeout, "10s", "таймаут подключения к серверу")
+	timeoutFlag := flag.String("timeout", "10s", "таймаут подключения к серверу")
 	timeout, err := time.ParseDuration(*timeoutFlag)
+
+	flag.Parse()
 
 	if err != nil {
 		log.Fatalf("can't to parse flag: %v", err)
@@ -40,8 +38,6 @@ func main() {
 	if err := client.Connect(); err != nil {
 		log.Fatalf("не удалось подключиться к %v, %v", addr, err)
 	}
-
-	log.Printf("успешно подключен")
 	defer client.Close()
 
 	go receive(client)
