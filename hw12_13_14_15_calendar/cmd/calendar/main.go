@@ -3,21 +3,22 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
+	memorystorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "./configs/config.json", "Path to configuration file")
 }
 
 func main() {
@@ -28,17 +29,37 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := NewConfig(configFile)
+	if err != nil {
+		log.Fatalf("failed read config", err)
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	logg, err := logger.New(config.Logger.Level, config.Logger.FilePath)
+	if err != nil {
+		log.Fatalf("failed start logger %v\n", err)
+	}
 
-	server := internalhttp.NewServer(calendar)
-
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	var store storage.Storage
+
+	if config.Storage.Inmemory {
+		store = memorystorage.New()
+	} else {
+		dsn := DSN(config.Storage.Database)
+		store = sqlstorage.New()
+
+		err := store.Connect(ctx, dsn)
+		if err != nil {
+			logg.Error("failed connect storage" + err.Error())
+		}
+	}
+
+	calendar := app.New(logg, store)
+
+	// TODO Остановился тут
+	server := internalhttp.NewServer(calendar)
 
 	go func() {
 		<-ctx.Done()

@@ -1,0 +1,20 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8080
+  },
+  "logger": {
+    "level": -1,
+    "file_path": "./log.log"
+  },
+  "storage": {
+    "database": {
+      "username": "user",
+      "password": "password",
+      "host": "localhost",
+      "port": 1433,
+      "db": "calendar"
+    },
+    "type": "sql"
+  }
+}
