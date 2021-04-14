@@ -79,12 +79,15 @@ func DSN(config DBConf) string {
 	c.WriteString(":")
 	c.WriteString(config.Password)
 	c.WriteString("@")
+	c.WriteString("tcp(")
 	c.WriteString(config.Host)
 
 	if config.Port != 0 {
 		c.WriteString(":")
 		c.WriteString(strconv.Itoa(config.Port))
 	}
+	c.WriteString(")/")
+	c.WriteString(config.DB)
 
 	return c.String()
 }
