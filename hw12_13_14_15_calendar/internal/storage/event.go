@@ -37,4 +37,3 @@ type Events interface {
 	ShowWeekEvents(ctx context.Context, date time.Time) ([]Event, error)
 	ShowMonthEvents(ctx context.Context, date time.Time) ([]Event, error)
 }
-

@@ -12,7 +12,7 @@ import (
 type Storage struct {
 	sync.RWMutex
 	events map[int]*storage.Event
-	last int
+	last   int
 }
 
 func New() *Storage {
