@@ -1,7 +1,7 @@
 {
   "server": {
     "host": "localhost",
-    "port": 8080
+    "port": "8080"
   },
   "logger": {
     "level": -1,
@@ -9,10 +9,10 @@
   },
   "storage": {
     "database": {
-      "username": "user",
-      "password": "password",
+      "username": "root",
+      "password": "root",
       "host": "localhost",
-      "port": 1433,
+      "port": "3306",
       "db": "calendar"
     },
     "type": "sql"

@@ -58,8 +58,7 @@ func main() {
 
 	calendar := app.New(logg, store)
 
-	// TODO Остановился тут
-	server := internalhttp.NewServer(calendar)
+	server := internalhttp.NewServer(calendar, logg, config.Server.Host, config.Server.Port)
 
 	go func() {
 		<-ctx.Done()

@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
 const (
-	storageSql = "sql"
+	storageSql      = "sql"
 	storageInMemory = "in-memory"
 )
 
@@ -29,7 +28,7 @@ type LoggerConf struct {
 
 type ServerConf struct {
 	Host string `json:"host"`
-	Port int    `json:"port"`
+	Port string `json:"port"`
 }
 
 type StorageConf struct {
@@ -42,7 +41,7 @@ type DBConf struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
-	Port     int    `json:"port"`
+	Port     string `json:"port"`
 	DB       string `json:"db"`
 }
 
@@ -82,9 +81,9 @@ func DSN(config DBConf) string {
 	c.WriteString("tcp(")
 	c.WriteString(config.Host)
 
-	if config.Port != 0 {
+	if config.Port != "" {
 		c.WriteString(":")
-		c.WriteString(strconv.Itoa(config.Port))
+		c.WriteString(config.Port)
 	}
 	c.WriteString(")/")
 	c.WriteString(config.DB)
