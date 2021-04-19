@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	storageSql      = "sql"
+	storageSQL      = "sql"
 	storageInMemory = "in-memory"
 )
 
@@ -61,7 +61,7 @@ func NewConfig(configFile string) (Config, error) {
 	switch config.Storage.Type {
 	case storageInMemory:
 		config.Storage.Inmemory = true
-	case storageSql:
+	case storageSQL:
 		config.Storage.Inmemory = false
 	default:
 		// По умолчанию создаем хранилище в памяти

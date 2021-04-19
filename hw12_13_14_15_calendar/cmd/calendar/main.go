@@ -31,7 +31,7 @@ func main() {
 
 	config, err := NewConfig(configFile)
 	if err != nil {
-		log.Fatalf("failed read config", err)
+		log.Fatalf("failed read config %v\n", err)
 	}
 
 	logg, err := logger.New(config.Logger.Level, config.Logger.FilePath)
