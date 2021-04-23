@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
-	"os"
-	"time"
-
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/sql"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 var configFile string
@@ -26,8 +27,12 @@ func main() {
 
 	if flag.Arg(0) == "version" {
 		printVersion()
-		return
+		os.Exit(0)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go listenSignals(cancel)
 
 	config, err := NewConfig(configFile)
 	if err != nil {
@@ -39,8 +44,7 @@ func main() {
 		log.Fatalf("failed start logger %v\n", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	logg.Info("init store...")
 
 	var store storage.Storage
 
@@ -56,26 +60,42 @@ func main() {
 		}
 	}
 
+	logg.Info("init store completed...")
+	logg.Info("starting calendar...")
+
 	calendar := app.New(logg, store)
 
 	server := internalhttp.NewServer(calendar, logg, config.Server.Host, config.Server.Port)
 
+	logg.Info("run server...")
 	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+		if err := server.Start(); err != nil {
+			logg.Error(err)
+			cancel()
 		}
 	}()
+	logg.Info("server is running")
 
-	logg.Info("calendar is running...")
+	<-ctx.Done()
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	logg.Info("stopping server...")
+	cancel()
+
+	ctxSrv, cancelSrv := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancelSrv()
+
+	if err := server.Stop(ctxSrv); err != nil {
+		logg.Error("failed to stop http server: " + err.Error())
 	}
+
+	logg.Info("server is stopped")
+
+}
+
+func listenSignals(cancel context.CancelFunc) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signals
+	cancel()
 }

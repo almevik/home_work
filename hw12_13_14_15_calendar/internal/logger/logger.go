@@ -33,9 +33,6 @@ func New(level int8, filePath string) (*logger, error) {
 
 			TimeKey:    "time",
 			EncodeTime: zapcore.ISO8601TimeEncoder,
-
-			CallerKey:    "caller",
-			EncodeCaller: zapcore.FullCallerEncoder,
 		},
 	}
 
@@ -48,21 +45,21 @@ func New(level int8, filePath string) (*logger, error) {
 }
 
 func (l logger) Debug(args ...interface{}) {
-	l.Debug(args...)
+	l.Logger.Debug(fmt.Sprintf("%v", args))
 }
 
 func (l logger) Info(args ...interface{}) {
-	l.Info(args...)
+	l.Logger.Info(fmt.Sprintf("%v", args))
 }
 
 func (l logger) Warn(args ...interface{}) {
-	l.Warn(args...)
+	l.Logger.Warn(fmt.Sprintf("%v", args))
 }
 
 func (l logger) Error(args ...interface{}) {
-	l.Error(args...)
+	l.Logger.Error(fmt.Sprintf("%v", args))
 }
 
 func (l logger) Fatal(args ...interface{}) {
-	l.Fatal(args...)
+	l.Logger.Fatal(fmt.Sprintf("%v", args))
 }
