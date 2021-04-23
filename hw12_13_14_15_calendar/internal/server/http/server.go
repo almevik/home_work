@@ -9,13 +9,14 @@ import (
 	"github.com/gorilla/mux"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
 type Server struct {
+	addr   string
 	app    app.App
 	logger logger.Logger
-	addr   string
 	srv    *http.Server
 	router *mux.Router
 }
@@ -24,16 +25,17 @@ type Application interface {
 }
 
 func NewServer(app app.App, logg logger.Logger, host string, port string) *Server {
-	return &Server{
+	s := &Server{
+		addr:   net.JoinHostPort(host, port),
 		app:    app,
 		logger: logg,
-		addr:   net.JoinHostPort(host, port),
+		router: mux.NewRouter(),
 	}
+	s.configureRouter()
+	return s
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	s.SetupRoutes()
-
+func (s *Server) Start() error {
 	s.srv = &http.Server{
 		Addr:         s.addr,
 		Handler:      s.router,
@@ -45,7 +47,6 @@ func (s *Server) Start(ctx context.Context) error {
 		return fmt.Errorf("server closed: %w", err)
 	}
 
-	<-ctx.Done()
 	return err
 }
 
@@ -56,4 +57,53 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 
 	return err
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
+}
+
+// handlers устанавливает роуты.
+func (s *Server) configureRouter() {
+	s.router.Use(s.loggingMiddleware)
+	s.router.HandleFunc("/", s.homeHandler).Methods("GET")
+	s.router.HandleFunc("/hello-world", s.homeHandler).Methods("GET")
+}
+
+func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rw := &responseWriter{w, http.StatusOK}
+		next.ServeHTTP(rw, r)
+
+		s.logger.Info(
+			fmt.Sprintf("%s %s %s %s %d %s",
+				requestAddr(r),
+				r.Method,
+				r.RequestURI,
+				r.Proto,
+				rw.code,
+				userAgent(r),
+			))
+	})
+}
+
+func requestAddr(r *http.Request) string {
+	return strings.Split(r.RemoteAddr, ":")[0]
+}
+
+func userAgent(r *http.Request) string {
+	userAgents := r.Header["User-Agent"]
+	if len(userAgents) > 0 {
+		return "\"" + userAgents[0] + "\""
+	}
+	return ""
+}
+
+func (s *Server) homeHandler(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+
+	_, err := w.Write([]byte("Hello, world\n"))
+	if err != nil {
+		s.logger.Error(fmt.Errorf("http write: %w", err))
+	}
 }
