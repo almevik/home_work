@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
-	"github.com/gorilla/mux"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -63,7 +64,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-// handlers устанавливает роуты.
 func (s *Server) configureRouter() {
 	s.router.Use(s.loggingMiddleware)
 	s.router.HandleFunc("/", s.homeHandler).Methods("GET")

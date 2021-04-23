@@ -3,17 +3,18 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/sql"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 var configFile string

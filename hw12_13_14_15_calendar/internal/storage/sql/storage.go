@@ -199,7 +199,7 @@ func (s *Storage) ShowMonthEvents(ctx context.Context, date time.Time) ([]storag
 	return s.searchEvents(ctx, query, args)
 }
 
-// Общий запрос для поиска эвентов.
+// Общий запрос для поиска событий.
 func (s *Storage) searchEvents(ctx context.Context, query string, args ...interface{}) ([]storage.Event, error) {
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
