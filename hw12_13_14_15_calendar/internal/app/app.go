@@ -9,12 +9,12 @@ import (
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
 )
 
-type app struct {
+type App struct {
 	Logger
 	Storage
 }
 
-type App interface {
+type Methods interface {
 	CreateEvent(ctx context.Context, event storage.Event) (id int, err error)
 	UpdateEvent(ctx context.Context, id int, event storage.Event) error
 	DeleteEvent(ctx context.Context, id int) error
@@ -31,19 +31,21 @@ type Storage interface {
 	storage.Storage
 }
 
-func New(logger logger.Logger, storage storage.Storage) *app {
-	return &app{
+func New(logger logger.Logger, storage storage.Storage) *App {
+	return &App{
 		logger,
 		storage,
 	}
 }
 
-var ErrEmptyTitle = errors.New("empty title")
-var ErrIncorrectDates = errors.New("time start > time stop")
-var ErrStopPassed = errors.New("stop time already passed")
-var ErrEmptyUserID = errors.New("empty user id")
+var (
+	ErrEmptyTitle     = errors.New("empty title")
+	ErrIncorrectDates = errors.New("time start > time stop")
+	ErrStopPassed     = errors.New("stop time already passed")
+	ErrEmptyUserID    = errors.New("empty user id")
+)
 
-func (a *app) CreateEvent(ctx context.Context, event storage.Event) (int, error) {
+func (a *App) CreateEvent(ctx context.Context, event storage.Event) (int, error) {
 	if event.Title == "" {
 		return 0, ErrEmptyTitle
 	}
@@ -61,7 +63,7 @@ func (a *app) CreateEvent(ctx context.Context, event storage.Event) (int, error)
 	return a.Storage.CreateEvent(ctx, event)
 }
 
-func (a *app) UpdateEvent(ctx context.Context, id int, event storage.Event) error {
+func (a *App) UpdateEvent(ctx context.Context, id int, event storage.Event) error {
 	if event.Title == "" {
 		return ErrEmptyTitle
 	}
@@ -76,18 +78,18 @@ func (a *app) UpdateEvent(ctx context.Context, id int, event storage.Event) erro
 	return a.Storage.UpdateEvent(ctx, id, event)
 }
 
-func (a *app) DeleteEvent(ctx context.Context, id int) error {
+func (a *App) DeleteEvent(ctx context.Context, id int) error {
 	return a.Storage.DeleteEvent(ctx, id)
 }
 
-func (a *app) ShowDayEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (a *App) ShowDayEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ShowDayEvents(ctx, date)
 }
 
-func (a *app) ShowWeekEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (a *App) ShowWeekEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ShowWeekEvents(ctx, date)
 }
 
-func (a *app) ShowMonthEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (a *App) ShowMonthEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ShowMonthEvents(ctx, date)
 }

@@ -22,8 +22,8 @@ type Server struct {
 	router *mux.Router
 }
 
-type Application interface {
-}
+// type Application interface {
+// }
 
 func NewServer(app app.App, logg logger.Logger, host string, port string) *Server {
 	s := &Server{

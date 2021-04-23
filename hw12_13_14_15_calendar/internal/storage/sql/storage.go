@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
-
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func New() *Storage {
@@ -215,6 +213,11 @@ func (s *Storage) searchEvents(ctx context.Context, query string, args ...interf
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = rows.Close()
+		_ = rows.Err()
+	}()
+
 	var events []storage.Event
 	for rows.Next() {
 		event := new(storage.Event)

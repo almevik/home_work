@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type logger struct {
+type Logg struct {
 	*zap.Logger
 }
 
@@ -19,7 +19,7 @@ type Logger interface {
 	Fatal(args ...interface{})
 }
 
-func New(level int8, filePath string) (*logger, error) {
+func New(level int8, filePath string) (*Logg, error) {
 	cfg := zap.Config{
 		Encoding:         "json",
 		Level:            zap.NewAtomicLevelAt(zapcore.Level(level)),
@@ -41,25 +41,25 @@ func New(level int8, filePath string) (*logger, error) {
 		return nil, fmt.Errorf("failed build logger: %w", err)
 	}
 
-	return &logger{logg}, nil
+	return &Logg{logg}, nil
 }
 
-func (l logger) Debug(args ...interface{}) {
+func (l Logg) Debug(args ...interface{}) {
 	l.Logger.Debug(fmt.Sprintf("%v", args))
 }
 
-func (l logger) Info(args ...interface{}) {
+func (l Logg) Info(args ...interface{}) {
 	l.Logger.Info(fmt.Sprintf("%v", args))
 }
 
-func (l logger) Warn(args ...interface{}) {
+func (l Logg) Warn(args ...interface{}) {
 	l.Logger.Warn(fmt.Sprintf("%v", args))
 }
 
-func (l logger) Error(args ...interface{}) {
+func (l Logg) Error(args ...interface{}) {
 	l.Logger.Error(fmt.Sprintf("%v", args))
 }
 
-func (l logger) Fatal(args ...interface{}) {
+func (l Logg) Fatal(args ...interface{}) {
 	l.Logger.Fatal(fmt.Sprintf("%v", args))
 }

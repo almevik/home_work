@@ -66,7 +66,7 @@ func main() {
 
 	calendar := app.New(logg, store)
 
-	server := internalhttp.NewServer(calendar, logg, config.Server.Host, config.Server.Port)
+	server := internalhttp.NewServer(*calendar, logg, config.Server.Host, config.Server.Port)
 
 	logg.Info("run server...")
 	go func() {
@@ -90,7 +90,6 @@ func main() {
 	}
 
 	logg.Info("server is stopped")
-
 }
 
 func listenSignals(cancel context.CancelFunc) {

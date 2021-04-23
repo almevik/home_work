@@ -6,8 +6,10 @@ import (
 	"time"
 )
 
-var ErrEventNotFound = errors.New("event not found")
-var ErrNoRows = errors.New("no rows found")
+var (
+	ErrEventNotFound = errors.New("event not found")
+	ErrNoRows        = errors.New("no rows found")
+)
 
 type Storage interface {
 	Connection
