@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -72,21 +72,21 @@ func NewConfig(configFile string) (Config, error) {
 }
 
 // Собирает строку DSN.
-func DSN(config DBConf) string {
+func (cfg *StorageConf) DSN() string {
 	var c strings.Builder
-	c.WriteString(config.Username)
+	c.WriteString(cfg.Database.Username)
 	c.WriteString(":")
-	c.WriteString(config.Password)
+	c.WriteString(cfg.Database.Password)
 	c.WriteString("@")
 	c.WriteString("tcp(")
-	c.WriteString(config.Host)
+	c.WriteString(cfg.Database.Host)
 
-	if config.Port != "" {
+	if cfg.Database.Port != "" {
 		c.WriteString(":")
-		c.WriteString(config.Port)
+		c.WriteString(cfg.Database.Port)
 	}
 	c.WriteString(")/")
-	c.WriteString(config.DB)
+	c.WriteString(cfg.Database.DB)
 
 	return c.String()
 }
