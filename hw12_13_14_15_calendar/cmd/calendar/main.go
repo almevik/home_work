@@ -9,18 +9,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/repository"
-
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/config"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
 )
 
 var (
 	configFile string
-	dbProvider provider.DataProvider
 )
 
 func init() {
@@ -60,13 +57,6 @@ func main() {
 	logg.Info("starting calendar...")
 
 	calendar := app.New(logg, dataProvider)
-	calendar.Provider.Models.Events.CreateEvent(*&repository.Event{
-		ID:          1,
-		Title:       "test",
-		Description: "deccr",
-	})
-	logg.Info("delete event...%v/n", calendar.Provider.Models.Events.DeleteEvent(1))
-
 	server := internalhttp.NewServer(*calendar, logg, cfg.Server.Host, cfg.Server.Port)
 
 	logg.Info("run server...")

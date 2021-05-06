@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/repository"
-
 	"github.com/stretchr/testify/suite"
 )
 
