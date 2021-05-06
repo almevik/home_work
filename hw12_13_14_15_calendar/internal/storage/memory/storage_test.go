@@ -19,7 +19,7 @@ func (m *MemStoreSuite) SetupTest() {
 	notification := 4 * time.Hour
 
 	m.store.events = map[int]*repository.Event{
-		1: &repository.Event{
+		1: {
 			ID:           1,
 			Title:        "Title1",
 			Start:        time.Now().Add(2 * time.Hour),
@@ -28,7 +28,7 @@ func (m *MemStoreSuite) SetupTest() {
 			UserID:       1,
 			Notification: &notification,
 		},
-		2: &repository.Event{
+		2: {
 			ID:           2,
 			Title:        "Title2",
 			Start:        time.Now().Add(time.Hour),

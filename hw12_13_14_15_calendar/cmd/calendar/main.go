@@ -16,9 +16,7 @@ import (
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
 )
 
-var (
-	configFile string
-)
+var configFile string
 
 func init() {
 	flag.StringVar(&configFile, "config", "./configs/config.json", "Path to configuration file")
