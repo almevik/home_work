@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/repository"
 )
 
 type Storage struct {
 	sync.RWMutex
-	events map[int]*storage.Event
+	events map[int]*repository.Event
 	last   int
 }
 
@@ -27,7 +27,7 @@ func (s *Storage) Close(_ context.Context) error {
 	return nil
 }
 
-func (s *Storage) CreateEvent(_ context.Context, event storage.Event) (int, error) {
+func (s *Storage) CreateEvent(_ context.Context, event repository.Event) (int, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -38,13 +38,13 @@ func (s *Storage) CreateEvent(_ context.Context, event storage.Event) (int, erro
 	return id, nil
 }
 
-func (s *Storage) UpdateEvent(_ context.Context, id int, change storage.Event) error {
+func (s *Storage) UpdateEvent(_ context.Context, id int, change repository.Event) error {
 	s.Lock()
 	defer s.Unlock()
 
 	event, ok := s.events[id]
 	if !ok {
-		return storage.ErrEventNotFound
+		return repository.ErrEventNotFound
 	}
 
 	event.Title = change.Title
@@ -69,15 +69,15 @@ func (s *Storage) DeleteAllEvents(_ context.Context) error {
 	s.Lock()
 	defer s.Unlock()
 
-	s.events = make(map[int]*storage.Event)
+	s.events = make(map[int]*repository.Event)
 	return nil
 }
 
-func (s *Storage) ShowDayEvents(_ context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowDayEvents(_ context.Context, date time.Time) ([]repository.Event, error) {
 	s.Lock()
 	defer s.Unlock()
 
-	var result []storage.Event
+	var result []repository.Event
 	year, month, day := date.Date()
 
 	for _, event := range s.events {
@@ -90,11 +90,11 @@ func (s *Storage) ShowDayEvents(_ context.Context, date time.Time) ([]storage.Ev
 	return order(result), nil
 }
 
-func (s *Storage) ShowWeekEvents(_ context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowWeekEvents(_ context.Context, date time.Time) ([]repository.Event, error) {
 	s.Lock()
 	defer s.Unlock()
 
-	var result []storage.Event
+	var result []repository.Event
 	year, week := date.ISOWeek()
 
 	for _, event := range s.events {
@@ -107,11 +107,11 @@ func (s *Storage) ShowWeekEvents(_ context.Context, date time.Time) ([]storage.E
 	return order(result), nil
 }
 
-func (s *Storage) ShowMonthEvents(_ context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowMonthEvents(_ context.Context, date time.Time) ([]repository.Event, error) {
 	s.Lock()
 	defer s.Unlock()
 
-	var result []storage.Event
+	var result []repository.Event
 	year, month, _ := date.Date()
 
 	for _, event := range s.events {
@@ -130,7 +130,7 @@ func (s *Storage) next() int {
 }
 
 // Сортировка событий по порядку.
-func order(events []storage.Event) []storage.Event {
+func order(events []repository.Event) []repository.Event {
 	sort.Slice(events, func(i, j int) bool {
 		return events[i].Start.Before(events[j].Start)
 	})

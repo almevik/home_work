@@ -9,15 +9,19 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/repository"
+
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/config"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
-	memorystorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
-var configFile string
+var (
+	configFile string
+	dbProvider provider.DataProvider
+)
 
 func init() {
 	flag.StringVar(&configFile, "config", "./configs/config.json", "Path to configuration file")
@@ -35,38 +39,35 @@ func main() {
 
 	go listenSignals(cancel)
 
-	config, err := NewConfig(configFile)
+	cfg, err := config.NewConfig(configFile)
 	if err != nil {
 		log.Fatalf("failed read config %v\n", err)
 	}
 
-	logg, err := logger.New(config.Logger.Level, config.Logger.FilePath)
+	logg, err := logger.New(cfg.Logger.Level, cfg.Logger.FilePath)
 	if err != nil {
 		log.Fatalf("failed start logger %v\n", err)
 	}
 
 	logg.Info("init store...")
 
-	var store storage.Storage
-
-	if config.Storage.Inmemory {
-		store = memorystorage.New()
-	} else {
-		dsn := DSN(config.Storage.Database)
-		store = sqlstorage.New()
-
-		err := store.Connect(ctx, dsn)
-		if err != nil {
-			logg.Error("failed connect storage" + err.Error())
-		}
+	dataProvider, err := provider.NewDataProvider(ctx, cfg.Storage)
+	if err != nil {
+		logg.Error("failed connect to storage %v\n", err)
 	}
 
 	logg.Info("init store completed...")
 	logg.Info("starting calendar...")
 
-	calendar := app.New(logg, store)
+	calendar := app.New(logg, dataProvider)
+	calendar.Provider.Models.Events.CreateEvent(*&repository.Event{
+		ID:          1,
+		Title:       "test",
+		Description: "deccr",
+	})
+	logg.Info("delete event...%v/n", calendar.Provider.Models.Events.DeleteEvent(1))
 
-	server := internalhttp.NewServer(*calendar, logg, config.Server.Host, config.Server.Port)
+	server := internalhttp.NewServer(*calendar, logg, cfg.Server.Host, cfg.Server.Port)
 
 	logg.Info("run server...")
 	go func() {

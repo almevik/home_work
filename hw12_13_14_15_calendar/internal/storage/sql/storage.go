@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
-	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/repository"
 	"github.com/pkg/errors"
 )
 
@@ -38,7 +38,7 @@ func (s *Storage) Close(_ context.Context) error {
 	return s.db.Close()
 }
 
-func (s *Storage) CreateEvent(ctx context.Context, event storage.Event) (int, error) {
+func (s *Storage) CreateEvent(ctx context.Context, event repository.Event) (int, error) {
 	query := `INSERT INTO event (title, start, stop, description, user_id, notification)
 			  VALUES(?, ?, ?, ?, ?, ?)`
 	stmt, err := s.db.PrepareContext(ctx, query)
@@ -72,7 +72,7 @@ func (s *Storage) CreateEvent(ctx context.Context, event storage.Event) (int, er
 	return int(id), nil
 }
 
-func (s *Storage) UpdateEvent(ctx context.Context, id int, event storage.Event) error {
+func (s *Storage) UpdateEvent(ctx context.Context, id int, event repository.Event) error {
 	query := `UPDATE event
 				SET title = ?,
 					start = ?,
@@ -109,7 +109,7 @@ func (s *Storage) UpdateEvent(ctx context.Context, id int, event storage.Event) 
 	}
 
 	if count != 1 {
-		return storage.ErrEventNotFound
+		return repository.ErrEventNotFound
 	}
 	return nil
 }
@@ -136,7 +136,7 @@ func (s *Storage) DeleteEvent(ctx context.Context, id int) error {
 	}
 
 	if count != 1 {
-		return storage.ErrEventNotFound
+		return repository.ErrEventNotFound
 	}
 	return nil
 }
@@ -158,7 +158,7 @@ func (s *Storage) DeleteAllEvents(ctx context.Context) error {
 	return err
 }
 
-func (s *Storage) ShowDayEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowDayEvents(ctx context.Context, date time.Time) ([]repository.Event, error) {
 	y, m, d := date.Date()
 	query := `SELECT id, title, start, stop, description, user_id, notification
 		FROM event
@@ -171,7 +171,7 @@ func (s *Storage) ShowDayEvents(ctx context.Context, date time.Time) ([]storage.
 	return s.searchEvents(ctx, query, args)
 }
 
-func (s *Storage) ShowWeekEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowWeekEvents(ctx context.Context, date time.Time) ([]repository.Event, error) {
 	y, w := date.ISOWeek()
 	query := `SELECT id, title, start, stop, description, user_id, notification
 		FROM event
@@ -184,7 +184,7 @@ func (s *Storage) ShowWeekEvents(ctx context.Context, date time.Time) ([]storage
 	return s.searchEvents(ctx, query, args)
 }
 
-func (s *Storage) ShowMonthEvents(ctx context.Context, date time.Time) ([]storage.Event, error) {
+func (s *Storage) ShowMonthEvents(ctx context.Context, date time.Time) ([]repository.Event, error) {
 	y, m, _ := date.Date()
 	query := `SELECT id, title, start, stop, description, user_id, notification
 		FROM event
@@ -198,7 +198,7 @@ func (s *Storage) ShowMonthEvents(ctx context.Context, date time.Time) ([]storag
 }
 
 // Общий запрос для поиска событий.
-func (s *Storage) searchEvents(ctx context.Context, query string, args ...interface{}) ([]storage.Event, error) {
+func (s *Storage) searchEvents(ctx context.Context, query string, args ...interface{}) ([]repository.Event, error) {
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -218,9 +218,9 @@ func (s *Storage) searchEvents(ctx context.Context, query string, args ...interf
 		_ = rows.Err()
 	}()
 
-	var events []storage.Event
+	var events []repository.Event
 	for rows.Next() {
-		event := new(storage.Event)
+		event := new(repository.Event)
 		err := rows.Scan(
 			&event.ID,
 			&event.Title,
@@ -237,7 +237,7 @@ func (s *Storage) searchEvents(ctx context.Context, query string, args ...interf
 	}
 
 	if len(events) == 0 {
-		return nil, storage.ErrNoRows
+		return nil, repository.ErrNoRows
 	}
 
 	return events, nil
