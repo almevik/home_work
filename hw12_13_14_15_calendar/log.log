@@ -1,0 +1,18 @@
+{"level":"INFO","time":"2021-04-30T08:26:50.276+0300","message":"[init store...]"}
+{"level":"INFO","time":"2021-04-30T08:26:50.319+0300","message":"[init store completed...]"}
+{"level":"INFO","time":"2021-04-30T08:26:50.319+0300","message":"[starting calendar...]"}
+{"level":"INFO","time":"2021-04-30T08:26:50.319+0300","message":"[delete event...%v/n <nil>]"}
+{"level":"INFO","time":"2021-04-30T08:26:50.320+0300","message":"[run server...]"}
+{"level":"INFO","time":"2021-04-30T08:26:50.320+0300","message":"[server is running]"}
+{"level":"INFO","time":"2021-04-30T08:27:11.498+0300","message":"[127.0.0.1 GET / HTTP/1.1 200 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36\"]"}
+{"level":"INFO","time":"2021-04-30T08:27:25.358+0300","message":"[127.0.0.1 GET /hello-world HTTP/1.1 200 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36\"]"}
+{"level":"INFO","time":"2021-04-30T08:31:54.869+0300","message":"[stopping server...]"}
+{"level":"ERROR","time":"2021-04-30T08:31:54.869+0300","message":"[server closed: http: Server closed]"}
+{"level":"INFO","time":"2021-04-30T08:31:54.870+0300","message":"[server is stopped]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.072+0300","message":"[init store...]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.113+0300","message":"[init store completed...]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.113+0300","message":"[starting calendar...]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.113+0300","message":"[delete event...%v/n <nil>]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.113+0300","message":"[run server...]"}
+{"level":"INFO","time":"2021-05-06T20:17:17.113+0300","message":"[server is running]"}
+{"level":"INFO","time":"2021-05-06T20:17:37.163+0300","message":"[127.0.0.1 GET /hello-world HTTP/1.1 200 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36\"]"}

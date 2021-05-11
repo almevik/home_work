@@ -47,6 +47,7 @@ cat and dog, one dog,two cats and one man
 ### Подсказки
 - `regexp.MustCompile`
 - `strings.Split`
+- `strings.Fields`
 - `sort.Slice`
 
 ### Частые ошибки

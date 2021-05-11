@@ -3,21 +3,23 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/config"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/app"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/almevik/home_work/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "./configs/config.json", "Path to configuration file")
 }
 
 func main() {
@@ -25,37 +27,64 @@ func main() {
 
 	if flag.Arg(0) == "version" {
 		printVersion()
-		return
+		os.Exit(0)
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	go listenSignals(cancel)
 
-	server := internalhttp.NewServer(calendar)
+	cfg, err := config.NewConfig(configFile)
+	if err != nil {
+		log.Fatalf("failed read config %v\n", err)
+	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
+	logg, err := logger.New(cfg.Logger.Level, cfg.Logger.FilePath)
+	if err != nil {
+		log.Fatalf("failed start logger %v\n", err)
+	}
 
+	logg.Info("init store...")
+
+	dataProvider, err := provider.NewDataProvider(ctx, cfg.Storage)
+	if err != nil {
+		logg.Error("failed connect to storage %v\n", err)
+	}
+
+	logg.Info("init store completed...")
+	logg.Info("starting calendar...")
+
+	calendar := app.New(logg, dataProvider)
+	server := internalhttp.NewServer(*calendar, logg, cfg.Server.Host, cfg.Server.Port)
+
+	logg.Info("run server...")
 	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+		if err := server.Start(); err != nil {
+			logg.Error(err)
+			cancel()
 		}
 	}()
+	logg.Info("server is running")
 
-	logg.Info("calendar is running...")
+	<-ctx.Done()
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	logg.Info("stopping server...")
+	cancel()
+
+	ctxSrv, cancelSrv := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancelSrv()
+
+	if err := server.Stop(ctxSrv); err != nil {
+		logg.Error("failed to stop http server: " + err.Error())
 	}
+
+	logg.Info("server is stopped")
+}
+
+func listenSignals(cancel context.CancelFunc) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signals
+	cancel()
 }

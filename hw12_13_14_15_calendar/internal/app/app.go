@@ -1,26 +1,22 @@
 package app
 
 import (
-	"context"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/logger"
+	"github.com/almevik/home_work/hw12_13_14_15_calendar/internal/storage/provider"
 )
 
-type App struct { // TODO
+type App struct {
+	Logger
+	Provider *provider.DataProvider
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	logger.Logger
 }
 
-type Storage interface { // TODO
+func New(logger logger.Logger, provider *provider.DataProvider) *App {
+	return &App{
+		logger,
+		provider,
+	}
 }
-
-func New(logger Logger, storage Storage) *App {
-	return &App{}
-}
-
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
-}
-
-// TODO
